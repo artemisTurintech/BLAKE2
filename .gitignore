@@ -1,7 +1,11 @@
 b2sum/b2sum
 bench/blake2b
+bench/blake2b.exe
+bench/blake2b_bench.exe
 bench/blake2b.data
 bench/blake2s
+bench/blake2s.exe
+bench/blake2s_bench.exe
 bench/blake2s.data
 bench/md5
 bench/md5.data
@@ -18,6 +22,12 @@ ref/blake2xs
 ref/blake2xb
 sse/blake2xs
 sse/blake2xb
+sse/blake2b.exe
+sse/blake2bp.exe
+sse/blake2s.exe
+sse/blake2sp.exe
+sse/blake2xs.exe
+sse/blake2xb.exe
 neon/blake2s
 neon/blake2b
 neon/blake2sp
@@ -25,3 +35,5 @@ neon/blake2bp
 neon/blake2xs
 neon/blake2xb
 **tags
+artemis_results.json
+CLAUDE.md
