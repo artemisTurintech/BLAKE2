@@ -72,7 +72,9 @@ def run_one(algo_fn, data):
 # ---------------------------------------------------------------------------
 # Run benchmarks
 # ---------------------------------------------------------------------------
-rows = []
+row = {"runs": REPEAT}
+all_throughputs = []
+all_latencies = []
 
 print(f"BLAKE2 Python benchmark  (number={NUMBER}, repeat={REPEAT})\n")
 header = f"{'algorithm':<10} {'size':<6}  {'MB/s mean':>12}  {'MB/s ±':>10}  {'µs/hash mean':>14}  {'µs/hash ±':>10}"
@@ -89,25 +91,45 @@ for algo_name, algo_fn in ALGORITHMS.items():
             f"{lat_mean:>14.3f}  {lat_sd:>10.4f}"
         )
 
-        rows.append(
-            {
-                "algorithm": algo_name,
-                "message_size": size_label,
-                "message_size_bytes": DATA_SIZES[size_label],
-                "number": NUMBER,
-                "repeat": REPEAT,
-                "throughput_mb_s": round(tp_mean, 3),
-                "throughput_mb_s_stdev": round(tp_sd, 3),
-                "latency_us": round(lat_mean, 4),
-                "latency_us_stdev": round(lat_sd, 5),
-            }
-        )
+        all_throughputs.append(tp_mean)
+        all_latencies.append(lat_mean)
+
+        prefix = f"{algo_name}_{size_label.lower()}"
+        row[f"{prefix}_throughput_mb_s_mean"]        = round(tp_mean, 3)
+        row[f"{prefix}_throughput_mb_s_stdev"]       = round(tp_sd, 3)
+        row[f"{prefix}_throughput_mb_s_better_when"] = "higher"
+        row[f"{prefix}_latency_us_mean"]              = round(lat_mean, 4)
+        row[f"{prefix}_latency_us_stdev"]             = round(lat_sd, 5)
+        row[f"{prefix}_latency_us_better_when"]       = "lower"
+
+# Overall scores: geometric mean across all algorithm+size combinations.
+# Geometric mean weights each combination equally regardless of scale.
+def _geomean(values):
+    log_mean = sum(math.log(v) for v in values) / len(values)
+    return math.exp(log_mean)
+
+overall_tp = _geomean(all_throughputs)
+_, overall_tp_sd = _mean_stdev(all_throughputs)
+
+overall_lat = _geomean(all_latencies)
+_, overall_lat_sd = _mean_stdev(all_latencies)
+
+print(f"\nOverall throughput score : {overall_tp:.1f} MB/s (geometric mean)")
+print(f"Overall latency score    : {overall_lat:.3f} µs  (geometric mean)")
+
+row["overall_throughput_mb_s_mean"]        = round(overall_tp, 3)
+row["overall_throughput_mb_s_stdev"]       = round(overall_tp_sd, 3)
+row["overall_throughput_mb_s_better_when"] = "higher"
+row["overall_latency_us_mean"]              = round(overall_lat, 4)
+row["overall_latency_us_stdev"]             = round(overall_lat_sd, 4)
+row["overall_latency_us_better_when"]       = "lower"
 
 # ---------------------------------------------------------------------------
-# Persist
+# Persist — write to repo root regardless of where this script lives
 # ---------------------------------------------------------------------------
-output_path = os.path.join(os.path.dirname(__file__), "artemis_results.json")
+repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+output_path = os.path.join(repo_root, "artemis_results.json")
 with open(output_path, "w") as f:
-    json.dump(rows, f, indent=2)
+    json.dump([row], f, indent=2)
 
 print(f"\nResults written to {output_path}")

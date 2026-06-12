@@ -10,4 +10,4 @@ if (-not (Get-Command python -ErrorAction SilentlyContinue)) {
 
 # --- benchmark ---
 Set-Location $repoRoot
-python run_benchmark.py
+python "$PSScriptRoot\run_benchmark.py"
