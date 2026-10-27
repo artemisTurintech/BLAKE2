@@ -37,3 +37,6 @@ neon/blake2xb
 **tags
 artemis_results.json
 CLAUDE.md
+bench/artemis_bench
+bench/artemis_bench.exe
+artemis_results.json.tmp
